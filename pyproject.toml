@@ -11,6 +11,7 @@ octodns = "0.9.17"
 octodns-digitalocean = "0.0.2"
 pulumi-digitalocean = "^4.14.0"
 pulumi = "^3.36.0"
+pre-commit = "^2.20.0"
 
 [tool.poetry.dev-dependencies]
 
