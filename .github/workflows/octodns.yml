@@ -1,0 +1,27 @@
+name: octodns
+
+on:
+  push:
+    branches:
+      - devel
+
+jobs:
+
+  dry-run:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: checkout the code
+        uses: actions/checkout@v3
+
+      - name: install and activate poetry 
+        run: |
+          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+          poetry shell
+
+      - name: octodns dry run
+        working-directory: octodns
+        run: |
+          octodns-sync --config-file=./config/config.yml
