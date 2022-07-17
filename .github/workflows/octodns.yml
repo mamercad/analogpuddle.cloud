@@ -33,8 +33,9 @@ jobs:
         uses: mathiasvr/command-output@v1
         env:
           DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
-        run: |
-          cd octodns && octodns-sync --config-file=config/config.yaml
+        with:
+          run: |
+            cd octodns && octodns-sync --config-file=config/config.yaml
 
       - name: output
         id: output
