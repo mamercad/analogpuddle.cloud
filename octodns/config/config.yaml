@@ -1,0 +1,21 @@
+---
+manager:
+  include_meta: False
+  max_workers: 2
+
+providers:
+  config:
+    class: octodns.provider.yaml.YamlProvider
+    directory: ./config
+    default_ttl: 3600
+    enforce_order: True
+  digitalocean:
+    class: octodns_digitalocean.DigitalOceanProvider
+    token: env/DIGITALOCEAN_TOKEN
+
+zones:
+  analogpuddle.cloud.:
+    sources:
+      - config
+    targets:
+      - digitalocean
