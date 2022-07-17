@@ -1,4 +1,4 @@
-# Analog Puddle
+# AnalogPuddle
 
 [![octodns](https://github.com/mamercad/analogpuddle.cloud/actions/workflows/octodns.yml/badge.svg)](https://github.com/mamercad/analogpuddle.cloud/actions/workflows/octodns.yml)
 [![pages-build-deployment](https://github.com/mamercad/analogpuddle.cloud/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/mamercad/analogpuddle.cloud/actions/workflows/pages/pages-build-deployment)
