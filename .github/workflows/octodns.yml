@@ -23,4 +23,4 @@ jobs:
       - name: octodns dry run
         working-directory: octodns
         run: |
-          octodns-sync --config-file=./config/config.yml
+          octodns-sync --config-file=./config/config.yaml
