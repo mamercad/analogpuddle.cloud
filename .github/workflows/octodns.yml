@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - devel
+    paths:
+      - .github/workflows/octodns.yml
+      - octodns/**
 
 jobs:
 
