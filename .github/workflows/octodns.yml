@@ -16,11 +16,9 @@ jobs:
       - name: checkout the code
         uses: actions/checkout@v3
 
-      - name: install and activate poetry 
+      - name: install python requirements
         run: |
-          curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-          source $HOME/.poetry/env
-          poetry shell
+          pip install -r requirements.txt
 
       - name: octodns dry run
         working-directory: octodns
