@@ -40,8 +40,8 @@ jobs:
       - name: output
         id: output
         run: |
-          echo "stdout: ${{ steps.today.outputs.stdout }}"
-          echo "stderr: ${{ steps.today.outputs.stderr }}"
+          echo "stdout: ${{ steps.dryrun.outputs.stdout }}"
+          echo "stderr: ${{ steps.dryrun.outputs.stderr }}"
 
   # ship-it:
   #   runs-on: ubuntu-latest
