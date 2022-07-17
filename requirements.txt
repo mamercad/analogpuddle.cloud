@@ -1,13 +1,2 @@
-certifi @ file:///Users/mark/Library/Caches/pypoetry/artifacts/b0/0d/df/4aa04d9b421fc5f1438b55d4b37516d21ef0ba40158bf7f9dfb28122ca/certifi-2022.6.15-py3-none-any.whl
-charset-normalizer @ file:///Users/mark/Library/Caches/pypoetry/artifacts/bf/59/3f/6838dadc818c6595ae4a00c31af0da89039c1eaa370871d38072845e8d/charset_normalizer-2.1.0-py3-none-any.whl
-dnspython @ file:///Users/mark/Library/Caches/pypoetry/artifacts/83/1d/90/05a24fb4711e8c48b81604d2b14acca2e097b7f788587b6130cb528d1d/dnspython-2.2.1-py3-none-any.whl
-fqdn @ file:///Users/mark/Library/Caches/pypoetry/artifacts/a9/53/62/3643d22461023a6983fc2e53e7b3bb6b1d3e3cc97b8ddef1dcd5c7ecf1/fqdn-1.5.1-py3-none-any.whl
-idna @ file:///Users/mark/Library/Caches/pypoetry/artifacts/d5/04/80/9c17fd3240a37d12ff2ef042b0306aeb1abd2d8b95f150fd60be938352/idna-3.3-py3-none-any.whl
-natsort @ file:///Users/mark/Library/Caches/pypoetry/artifacts/62/9a/61/4098fcb66a482c21b9b55d1fe8ad6a713ca4d9327b428faaddadb6401b/natsort-8.1.0-py3-none-any.whl
-octodns @ file:///Users/mark/Library/Caches/pypoetry/artifacts/6a/5a/03/b11f73577ef424b9aa2dfc3215ce4652bb40e5057df52f95eef945f088/octodns-0.9.17-py3-none-any.whl
-octodns-digitalocean @ file:///Users/mark/Library/Caches/pypoetry/artifacts/9d/e7/09/f4cc1706f5f082b1caf9de8dab3c5db51b04abd3a2bf3d040353a98ab6/octodns_digitalocean-0.0.2-py3-none-any.whl
-python-dateutil @ file:///Users/mark/Library/Caches/pypoetry/artifacts/53/f8/2a/7d63ce15df7386e9536e83413453f8aa845b47fb425f05c4ca2fb231c3/python_dateutil-2.8.2-py2.py3-none-any.whl
-PyYAML @ file:///Users/mark/Library/Caches/pypoetry/artifacts/34/22/0a/c2c23086eb908baf4d8ba853dbe69485d068f3b61fecbbf9b48a00183a/PyYAML-6.0-cp39-cp39-macosx_10_9_x86_64.whl
-requests @ file:///Users/mark/Library/Caches/pypoetry/artifacts/96/68/40/1b2019f1ca6a6d07b2a3107daab4dca1e11111be3af28a435f7cd0463a/requests-2.28.1-py3-none-any.whl
-six @ file:///Users/mark/Library/Caches/pypoetry/artifacts/08/9f/47/c16ae03035fc69eaf100ea39657a49baaeef714e25a52575710c34cd48/six-1.16.0-py2.py3-none-any.whl
-urllib3 @ file:///Users/mark/Library/Caches/pypoetry/artifacts/fb/d7/ea/afeac748fa6a875802b02d2f5f9375bd0154a9bb765a0181f43e283b0e/urllib3-1.26.10-py2.py3-none-any.whl
+octodns==0.9.17
+octodns-digitalocean==0.0.2
