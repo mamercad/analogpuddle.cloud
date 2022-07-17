@@ -1,13 +1,16 @@
----
-"":
-  ttl: 1800
-  type: NS
-  values:
-    - ns1.digitalocean.com.
-    - ns2.digitalocean.com.
-    - ns3.digitalocean.com.
+? ""
+: - ttl: 1800
+    type: NS
+    values:
+      - ns1.digitalocean.com.
+      - ns2.digitalocean.com.
+      - ns3.digitalocean.com.
 stackstorm:
   ttl: 300
   type: A
   values:
     - 134.209.170.133
+web:
+  ttl: 300
+  type: CNAME
+  value: mamercad.github.io.
