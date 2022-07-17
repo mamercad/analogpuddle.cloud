@@ -11,7 +11,7 @@ providers:
     enforce_order: True
   digitalocean:
     class: octodns_digitalocean.DigitalOceanProvider
-    token: env/DIGITALOCEAN_TOKEN
+    token: env/DO_API_TOKEN
 
 zones:
   analogpuddle.cloud.:
