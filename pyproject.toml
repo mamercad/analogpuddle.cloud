@@ -6,7 +6,7 @@ authors = ["Mark Mercado <mamercad@gmail.com>"]
 license = "Unlicense"
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.8"
 octodns = "0.9.17"
 octodns-digitalocean = "0.0.2"
 
