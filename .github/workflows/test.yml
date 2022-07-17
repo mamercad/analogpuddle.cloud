@@ -1,0 +1,23 @@
+name: test
+
+on:
+  push:
+    branches:
+      - devel
+  workflow_dispatch:
+
+jobs:
+
+  dry-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout the code
+        uses: actions/checkout@v3
+
+      - name: Get today's date
+        uses: mathiasvr/command-output@v1
+        id: today
+        with:
+          run: date +'%Y-%m-%d'
+
+      - run: echo Today is ${{ steps.today.outputs.stdout }}
