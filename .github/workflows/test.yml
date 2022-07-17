@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  dry-run:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: checkout the code
