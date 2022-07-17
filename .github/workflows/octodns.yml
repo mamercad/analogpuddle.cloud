@@ -21,37 +21,39 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      # - name: octodns dry run
-      #   working-directory: octodns
-      #   env:
-      #     DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
-      #   run: |
-      #     octodns-sync --config-file=config/config.yaml
-
       - name: octodns dry run
-        id: dryrun
-        uses: mathiasvr/command-output@v1
+        working-directory: octodns
         env:
           DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
-        with:
-          run: |
-            cd octodns && octodns-sync --config-file=config/config.yaml
-
-      - name: output
-        id: output
         run: |
-          echo "stdout: ${{ steps.dryrun.outputs.stdout }}"
-          echo "stderr: ${{ steps.dryrun.outputs.stderr }}"
+          octodns-sync --config-file=config/config.yaml
 
-  # ship-it:
-  #   runs-on: ubuntu-latest
-  #   needs: dry-run
-  #   steps:
-  #     - uses: trstringer/manual-approval@v1
-  #       with:
-  #         secret: ${{ github.TOKEN }}
-  #         approvers: mamercad
+      # - name: octodns dry run
+      #   id: dryrun
+      #   uses: mathiasvr/command-output@v1
+      #   env:
+      #     DO_API_TOKEN: ${{ secrets.DO_API_TOKEN }}
+      #   with:
+      #     run: |
+      #       cd octodns && octodns-sync --config-file=config/config.yaml
 
-  #     - name: octodns apply
-  #       run: |
-  #         echo octodns apply
+      # - name: output
+      #   id: output
+      #   run: |
+      #     echo "stdout: ${{ steps.dryrun.outputs.stdout }}"
+      #     echo "stderr: ${{ steps.dryrun.outputs.stderr }}"
+
+  ship-it:
+    runs-on: ubuntu-latest
+    needs: dry-run
+    steps:
+      - uses: trstringer/manual-approval@v1
+        with:
+          secret: ${{ github.TOKEN }}
+          approvers: mamercad
+          # minimum-approvals: 1
+          # issue-title: Deploy OctoDNS changes
+
+      - name: octodns apply
+        run: |
+          octodns-sync --config-file=config/config.yaml --doit
