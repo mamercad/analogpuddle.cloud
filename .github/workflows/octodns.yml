@@ -9,11 +9,8 @@ on:
       - octodns/**
 
 jobs:
-
   dry-run:
-
     runs-on: ubuntu-latest
-
     steps:
 
       - name: checkout the code
