@@ -1,5 +1,5 @@
 ---
-'':
+"":
   ttl: 1800
   type: NS
   values:
@@ -10,4 +10,4 @@ stackstorm:
   ttl: 300
   type: A
   values:
-    - 134.209.170.133 
+    - 134.209.170.133
