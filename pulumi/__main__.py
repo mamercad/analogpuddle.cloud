@@ -1,14 +1,16 @@
-import os
-
 import pulumi
 import pulumi_digitalocean as digitalocean
 
-from constants import (
+from config import (
     DEFAULT_REGION,
+    DEFAULT_IMAGE,
     TLD,
+    WEB_CNAME_TARGET,
     SSH_PUBKEY_NAME,
     SSH_PUBKEY,
     LETSENCRYPT_EMAIL,
+    TAILSCALE_AUTH_KEY,
+    DO_API_TOKEN,
 )
 
 vpc = digitalocean.get_vpc(name=f"default-{DEFAULT_REGION}")
@@ -25,7 +27,7 @@ domain_record_web_cname = digitalocean.DnsRecord(
     name="web",
     ttl=300,
     type="CNAME",
-    value="mamercad.github.io.",
+    value=WEB_CNAME_TARGET,
     opts=pulumi.ResourceOptions(protect=True),
 )
 
@@ -80,15 +82,15 @@ runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
 """.format(
-    os.getenv("TAILSCALE_AUTH_KEY"),
+    TAILSCALE_AUTH_KEY,
     TLD,
-    os.getenv("DO_API_TOKEN"),
+    DO_API_TOKEN,
     LETSENCRYPT_EMAIL,
 )
 
 droplet_drip = digitalocean.Droplet(
     "drip",
-    image="ubuntu-20-04-x64",
+    image=DEFAULT_IMAGE,
     name="drip",
     region=DEFAULT_REGION,
     size="s-2vcpu-4gb",
@@ -99,7 +101,7 @@ droplet_drip = digitalocean.Droplet(
 
 domain_record_drip_a = digitalocean.DnsRecord(
     "drip",
-    domain="analogpuddle.cloud",
+    domain=TLD,
     name="drip",
     ttl=300,
     type="A",
