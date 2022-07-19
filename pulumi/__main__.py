@@ -201,3 +201,82 @@ domain_record_stackstorm_a = digitalocean.DnsRecord(
     type="A",
     value=droplet_stackstorm.ipv4_address,
 )
+
+cloud_init_thelounge = """#cloud-config
+write_files:
+- path: /var/tmp/cloud-init.sh
+  content: |
+    #!/usr/bin/env bash
+    set -e -o pipefail -u
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get -y update
+    echo
+    echo ">>>> TAILSCALE <<<<"
+    echo
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg \
+      | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list \
+      | sudo tee /etc/apt/sources.list.d/tailscale.list
+    apt-get -y update
+    apt-get -y install tailscale
+    tailscale up --authkey "{0}"
+    tailscale ip -4
+    echo
+    echo ">>>> CERTBOT <<<<"
+    echo
+    snap install core
+    snap refresh core
+    snap install --classic certbot
+    ln -s /snap/bin/certbot /usr/bin/certbot
+    touch /root/digitalocean.ini
+    chmod 600 /root/digitalocean.ini
+    echo "dns_digitalocean_token = {2}" >/root/digitalocean.ini
+    snap set certbot trust-plugin-with-root=ok
+    snap install certbot-dns-digitalocean
+    certbot certonly \
+      --agree-tos \
+      --email "{3}" \
+      --non-interactive \
+      --dns-digitalocean \
+      --dns-digitalocean-propagation-seconds 300 \
+      --dns-digitalocean-credentials /root/digitalocean.ini \
+      --domains "thelounge.{1}"
+    echo
+    echo ">>>> THELOUNGE <<<<"
+    echo
+    apt-get install -y nginx
+    curl -sL https://deb.nodesource.com/setup_18.x -o /var/tmp/nodesource_setup.sh
+    bash -x /var/tmp/nodesource_setup.sh
+    apt-get install -y nodejs
+    node -v
+    wget -c https://github.com/thelounge/thelounge/releases/download/v4.3.1/thelounge_4.3.1-2_all.deb
+    dpkg -i thelounge_4.3.1-2_all.deb
+runcmd:
+    - - bash
+      - /var/tmp/cloud-init.sh
+""".format(
+    TAILSCALE_AUTH_KEY,
+    TLD,
+    DO_API_TOKEN,
+    LETSENCRYPT_EMAIL,
+)
+
+droplet_thelounge = digitalocean.Droplet(
+    "thelounge",
+    image=DEFAULT_IMAGE,
+    name="thelounge",
+    region=DEFAULT_REGION,
+    size="s-1vcpu-2gb",
+    ssh_keys=[sshkey.fingerprint],
+    vpc_uuid=vpc.id,
+    user_data=cloud_init_thelounge,
+)
+
+domain_record_thelounge_a = digitalocean.DnsRecord(
+    "thelounge",
+    domain=TLD,
+    name="thelounge",
+    ttl=300,
+    type="A",
+    value=droplet_thelounge.ipv4_address,
+)
