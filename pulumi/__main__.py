@@ -120,8 +120,10 @@ write_files:
           ansible_connection: local
           st2_auth_username: "{4}"
           st2_auth_password: "{5}"
-          st2web_ssl_certificate: "{{{{ lookup('ansible.builtin.file', '{6}') }}}}\n"
-          st2web_ssl_certificate_key: "{{{{ lookup('ansible.builtin.file', '{7}') }}}}\n"
+          st2web_ssl_certificate: |
+            {{{{ lookup('ansible.builtin.file', '{6}') }}}}
+          st2web_ssl_certificate_key: |
+            {{{{ lookup('ansible.builtin.file', '{7}') }}}}
 - path: /var/tmp/cloud-init.sh
   content: |
     #!/usr/bin/env bash
@@ -178,7 +180,7 @@ runcmd:
     LETSENCRYPT_EMAIL,
     ST2_AUTH_USERNAME,
     ST2_AUTH_PASSWORD,
-    f"/etc/letsencrypt/live/stackstorm.{TLD}/chain.pem",
+    f"/etc/letsencrypt/live/stackstorm.{TLD}/fullchain.pem",
     f"/etc/letsencrypt/live/stackstorm.{TLD}/privkey.pem",
 )
 
@@ -251,6 +253,39 @@ write_files:
     node -v
     wget -c https://github.com/thelounge/thelounge/releases/download/v4.3.1/thelounge_4.3.1-2_all.deb
     dpkg -i thelounge_4.3.1-2_all.deb
+- path: /etc/nginx/sites-enabled/default
+  content: |
+    server {{
+      listen 80 default_server;
+      listen [::]:80 default_server;
+      server_name thelounge.{1};
+      rewrite ^ https://$host$request_uri? permanent;
+    }}
+    server {{
+      listen 443 ssl default_server;
+      listen [::]:443 ssl default_server;
+      server_name thelounge.{1};
+      ssl_certificate /etc/letsencrypt/live/thelounge.analogpuddle.cloud/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/thelounge.analogpuddle.cloud/privkey.pem;
+      ssl_protocols TLSv1.3 TLSv1.2;
+      ssl_prefer_server_ciphers on;
+      ssl_ecdh_curve secp521r1:secp384r1;
+      ssl_ciphers EECDH+AESGCM:EECDH+AES256;
+      ssl_session_cache shared:TLS:2m;
+      ssl_buffer_size 4k;
+      # openssl dhparam 4096 -out /etc/ssl/dhparam.pem
+      # ssl_dhparam /etc/ssl/dhparam.pem;
+      ssl_stapling on;
+      ssl_stapling_verify on;
+      resolver 1.1.1.1 1.0.0.1 [2606:4700:4700::1111] [2606:4700:4700::1001]; # Cloudflare
+      add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload' always;
+      root /var/www/html;
+      index index.html index.htm index.nginx-debian.html;
+      server_name _;
+      location / {{
+        try_files $uri $uri/ =404;
+      }}
+    }}
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
