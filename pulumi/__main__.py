@@ -117,17 +117,17 @@ write_files:
     all:
       hosts:
         localhost:
-          connection: local
+          ansible_connection: local
           st2_auth_username: "{4}"
           st2_auth_password: "{5}"
-          st2web_ssl_certificate: "{{ lookup('ansible.builtin.file', '{6}') }}"
-          st2web_ssl_certificate_key: "{{ lookup('ansible.builtin.file', '{7}') }}"
+          st2web_ssl_certificate: "{{{{ lookup('ansible.builtin.file', '{6}') }}}}\n"
+          st2web_ssl_certificate_key: "{{{{ lookup('ansible.builtin.file', '{7}') }}}}\n"
 - path: /var/tmp/cloud-init.sh
   content: |
     #!/usr/bin/env bash
     set -e -o pipefail -u
     export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get -y update
+    apt-get -y update
     echo
     echo ">>>> TAILSCALE <<<<"
     echo
@@ -135,8 +135,8 @@ write_files:
       | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list \
       | sudo tee /etc/apt/sources.list.d/tailscale.list
-    sudo apt-get -y update
-    sudo apt-get -y install tailscale
+    apt-get -y update
+    apt-get -y install tailscale
     sudo tailscale up --authkey "{0}"
     tailscale ip -4
     echo
