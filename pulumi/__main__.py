@@ -11,6 +11,8 @@ from config import (
     LETSENCRYPT_EMAIL,
     TAILSCALE_AUTH_KEY,
     DO_API_TOKEN,
+    ST2_AUTH_USERNAME,
+    ST2_AUTH_PASSWORD,
 )
 
 vpc = digitalocean.get_vpc(name=f"default-{DEFAULT_REGION}")
@@ -108,56 +110,94 @@ domain_record_drip_a = digitalocean.DnsRecord(
     value=droplet_drip.ipv4_address,
 )
 
-# cloud_init_stackstorm = """#cloud-config
-# write_files:
-# - path: /var/tmp/cloud-init.sh
-#   content: |
-#     #!/usr/bin/env bash
-#     set -e -o pipefail -u
-#     export DEBIAN_FRONTEND=noninteractive
-#     sudo apt-get -y update
-#     echo
-#     echo ">>>> TAILSCALE <<<<"
-#     echo
-#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg \
-#       | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
-#     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list \
-#       | sudo tee /etc/apt/sources.list.d/tailscale.list
-#     sudo apt-get -y install tailscale
-#     sudo tailscale up --authkey "{0}"
-#     tailscale ip -4
-#     echo
-#     echo ">>>> STACKSTORM <<<<"
-#     echo
-#     sudo apt-get -y install python3-pip
-#     sudo pip3 install ansible
-#     git clone https://github.com/StackStorm/ansible-st2
-#     pushd ansible-st2
-#     ansible-playbook stackstorm.yml -i localhost, -c local -v
-#     popd
-# runcmd:
-#     - - bash
-#       - /var/tmp/cloud-init.sh
-# """.format(
-#     os.getenv("TAILSCALE_AUTH_KEY")
-# )
+cloud_init_stackstorm = """#cloud-config
+write_files:
+- path: /var/tmp/stackstorm-inventory.yml
+  content: |
+    all:
+      hosts:
+        localhost:
+          connection: local
+          st2_auth_username: "{4}"
+          st2_auth_password: "{5}"
+          st2web_ssl_certificate: "{{ lookup('ansible.builtin.file', '{6}') }}"
+          st2web_ssl_certificate_key: "{{ lookup('ansible.builtin.file', '{7}') }}"
+- path: /var/tmp/cloud-init.sh
+  content: |
+    #!/usr/bin/env bash
+    set -e -o pipefail -u
+    export DEBIAN_FRONTEND=noninteractive
+    sudo apt-get -y update
+    echo
+    echo ">>>> TAILSCALE <<<<"
+    echo
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.noarmor.gpg \
+      | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
+    curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list \
+      | sudo tee /etc/apt/sources.list.d/tailscale.list
+    sudo apt-get -y update
+    sudo apt-get -y install tailscale
+    sudo tailscale up --authkey "{0}"
+    tailscale ip -4
+    echo
+    echo ">>>> CERTBOT <<<<"
+    echo
+    snap install core
+    snap refresh core
+    snap install --classic certbot
+    ln -s /snap/bin/certbot /usr/bin/certbot
+    touch /root/digitalocean.ini
+    chmod 600 /root/digitalocean.ini
+    echo "dns_digitalocean_token = {2}" >/root/digitalocean.ini
+    snap set certbot trust-plugin-with-root=ok
+    snap install certbot-dns-digitalocean
+    certbot certonly \
+      --agree-tos \
+      --email "{3}" \
+      --non-interactive \
+      --dns-digitalocean \
+      --dns-digitalocean-propagation-seconds 300 \
+      --dns-digitalocean-credentials /root/digitalocean.ini \
+      --domains "stackstorm.{1}"
+    echo
+    echo ">>>> STACKSTORM <<<<"
+    echo
+    sudo apt-get -y install python3-pip
+    sudo pip3 install ansible
+    git clone https://github.com/StackStorm/ansible-st2
+    pushd ansible-st2
+    ansible-playbook stackstorm.yml -i /var/tmp/stackstorm-inventory.yml -v
+    popd
+runcmd:
+    - - bash
+      - /var/tmp/cloud-init.sh
+""".format(
+    TAILSCALE_AUTH_KEY,
+    TLD,
+    DO_API_TOKEN,
+    LETSENCRYPT_EMAIL,
+    ST2_AUTH_USERNAME,
+    ST2_AUTH_PASSWORD,
+    f"/etc/letsencrypt/live/stackstorm.{TLD}/chain.pem",
+    f"/etc/letsencrypt/live/stackstorm.{TLD}/privkey.pem",
+)
 
-# droplet_stackstorm = digitalocean.Droplet(
-#     "stackstorm",
-#     image="ubuntu-20-04-x64",
-#     name="stackstorm",
-#     region="nyc3",
-#     size="g-2vcpu-8gb",
-#     ssh_keys=[sshkey_mamercad.fingerprint],
-#     vpc_uuid=default_vpc_nyc3.id,
-#     user_data=cloud_init,
-# )
+droplet_stackstorm = digitalocean.Droplet(
+    "stackstorm",
+    image=DEFAULT_IMAGE,
+    name="stackstorm",
+    region=DEFAULT_REGION,
+    size="g-2vcpu-8gb",
+    ssh_keys=[sshkey.fingerprint],
+    vpc_uuid=vpc.id,
+    user_data=cloud_init_stackstorm,
+)
 
-# domain_record_stackstorm_a = digitalocean.DnsRecord(
-#     "stackstorm",
-#     domain="analogpuddle.cloud",
-#     name="stackstorm",
-#     ttl=300,
-#     type="A",
-#     value=droplet_stackstorm.ipv4_address,
-# )
+domain_record_stackstorm_a = digitalocean.DnsRecord(
+    "stackstorm",
+    domain=TLD,
+    name="stackstorm",
+    ttl=300,
+    type="A",
+    value=droplet_stackstorm.ipv4_address,
+)
