@@ -1,4 +1,5 @@
 import os
+import time
 
 DEFAULT_REGION = "nyc3"
 DEFAULT_IMAGE = "ubuntu-20-04-x64"
@@ -14,3 +15,5 @@ DO_API_TOKEN = os.getenv("DO_API_TOKEN")
 
 ST2_AUTH_USERNAME = os.getenv("ST2_AUTH_USERNAME")
 ST2_AUTH_PASSWORD = os.getenv("ST2_AUTH_PASSWORD")
+
+EPOCH_TIME = int(time.time())
