@@ -263,6 +263,19 @@ semver = ">=2.8,<3.0"
 six = ">=1.12,<2.0"
 
 [[package]]
+name = "pulumi-cloudinit"
+version = "1.3.0"
+description = "A Pulumi package for creating and managing cloudinit cloud resources."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+parver = ">=0.2.1"
+pulumi = ">=3.0.0,<4.0.0"
+semver = ">=2.8.1"
+
+[[package]]
 name = "pulumi-digitalocean"
 version = "4.14.0"
 description = "A Pulumi package for creating and managing DigitalOcean cloud resources."
@@ -370,7 +383,7 @@ testing = ["coverage (>=4)", "coverage-enable-subprocess (>=1)", "flaky (>=3)", 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.8"
-content-hash = "914da56c31fde096a83300e8f38b64bdbbea53e6c0be2f7401358035a40e1e11"
+content-hash = "fd6cf4bea23e263e8e467c9d4490ac1ba8a87586bce6da30fa4fcd20a6612781"
 
 [metadata.files]
 arpeggio = []
@@ -407,6 +420,7 @@ platformdirs = [
 pre-commit = []
 protobuf = []
 pulumi = []
+pulumi-cloudinit = []
 pulumi-digitalocean = []
 python-dateutil = [
     {file = "python-dateutil-2.8.2.tar.gz", hash = "sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86"},
