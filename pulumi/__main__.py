@@ -286,9 +286,86 @@ write_files:
       index index.html index.htm index.nginx-debian.html;
       server_name _;
       location / {{
-        try_files $uri $uri/ =404;
+        # try_files $uri $uri/ =404;
+        proxy_pass http://127.0.0.1:9000/;
+        proxy_http_version 1.1;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        # by default nginx times out connections in one minute
+        proxy_read_timeout 1d;
       }}
     }}
+- path: /etc/thelounge/config.js
+  content: |
+    "use strict";
+    module.exports = {{
+      public: false,
+      host: 127.0.0.1,
+      port: 9000,
+      bind: undefined,
+      reverseProxy: true,
+      maxHistory: 10000,
+      https: {{
+        enable: false,
+        key: "",
+        certificate: "",
+        ca: "",
+      }},
+      theme: "default",
+      prefetch: false,
+      disableMediaPreview: false,
+      prefetchStorage: false,
+      prefetchMaxImageSize: 2048,
+      prefetchMaxSearchSize: 50,
+      fileUpload: {{
+        enable: false,
+        maxFileSize: 10240,
+        baseUrl: null,
+      }},
+      transports: ["polling", "websocket"],
+      leaveMessage: "The Lounge - https://thelounge.chat",
+      defaults: {{
+        name: "Libera.Chat",
+        host: "irc.libera.chat",
+        port: 6697,
+        password: "",
+        tls: true,
+        rejectUnauthorized: true,
+        nick: "thelounge%%",
+        username: "thelounge",
+        realname: "The Lounge User",
+        join: "#thelounge",
+        leaveMessage: "",
+      }},
+      lockNetwork: false,
+      messageStorage: ["sqlite", "text"],
+      useHexIp: false,
+      webirc: null,
+      identd: {{
+        enable: false,
+        port: 113,
+      }},
+      oidentd: null,
+      ldap: {{
+        enable: false,
+        url: "ldaps://example.com",
+        tlsOptions: {{}},
+        primaryKey: "uid",
+        searchDN: {{
+          rootDN: "cn=thelounge,ou=system-users,dc=example,dc=com",
+          rootPassword: "1234",
+          filter: "(objectClass=person)(memberOf=ou=accounts,dc=example,dc=com)",
+          base: "dc=example,dc=com",
+          scope: "sub",
+        }},
+      }},
+      debug: {{
+        ircFramework: false,
+        raw: false,
+      }},
+    }};
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
