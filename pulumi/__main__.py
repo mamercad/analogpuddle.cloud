@@ -40,14 +40,14 @@ sshkey = digitalocean.SshKey(
     opts=pulumi.ResourceOptions(protect=True),
 )
 
-cloud_init_drip = """#cloud-config
+cloud_init_drip = f"""#cloud-config
 write_files:
 - path: /var/tmp/cloud-init.sh
   content: |
     #!/usr/bin/env bash
     set -e -o pipefail -u
     export DEBIAN_FRONTEND=noninteractive
-    sudo apt-get -y update
+    apt-get -y update
     echo
     echo ">>>> TAILSCALE <<<<"
     echo
@@ -55,9 +55,9 @@ write_files:
       | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg
     curl -fsSL https://pkgs.tailscale.com/stable/ubuntu/focal.tailscale-keyring.list \
       | sudo tee /etc/apt/sources.list.d/tailscale.list
-    sudo apt-get -y update
-    sudo apt-get -y install tailscale
-    sudo tailscale up --authkey "{0}"
+    apt-get -y update
+    apt-get -y install tailscale
+    sudo tailscale up --authkey "{TAILSCALE_AUTH_KEY}"
     tailscale ip -4
     echo
     echo ">>>> CERTBOT <<<<"
@@ -68,27 +68,59 @@ write_files:
     ln -s /snap/bin/certbot /usr/bin/certbot
     touch /root/digitalocean.ini
     chmod 600 /root/digitalocean.ini
-    echo "dns_digitalocean_token = {2}" >/root/digitalocean.ini
+    echo "dns_digitalocean_token = {DO_API_TOKEN}" >/root/digitalocean.ini
     snap set certbot trust-plugin-with-root=ok
     snap install certbot-dns-digitalocean
     certbot certonly \
       --agree-tos \
-      --email "{3}" \
+      --email "{LETSENCRYPT_EMAIL}" \
       --non-interactive \
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "{1}" \
-      --domains "*.{1}"
+      --domains "{TLD}" \
+      --domains "*.{TLD}"
+    echo
+    echo ">>>> LASTMILE <<<<"
+    echo
+    apt-get install -y nginx
+- path: /etc/nginx/sites-enabled/default
+  content: |
+    server {{
+      listen 80 default_server;
+      listen [::]:80 default_server;
+      server_name drip.{TLD};
+      rewrite ^ https://$host$request_uri? permanent;
+    }}
+    server {{
+      listen 443 ssl default_server;
+      listen [::]:443 ssl default_server;
+      server_name thelounge.{TLD};
+      ssl_certificate /etc/letsencrypt/live/drip.{TLD}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/drip.{TLD}/privkey.pem;
+      ssl_protocols TLSv1.3 TLSv1.2;
+      ssl_prefer_server_ciphers on;
+      ssl_ecdh_curve secp521r1:secp384r1;
+      ssl_ciphers EECDH+AESGCM:EECDH+AES256;
+      ssl_session_cache shared:TLS:2m;
+      ssl_buffer_size 4k;
+      # openssl dhparam 4096 -out /etc/ssl/dhparam.pem
+      # ssl_dhparam /etc/ssl/dhparam.pem;
+      ssl_stapling on;
+      ssl_stapling_verify on;
+      resolver 1.1.1.1 1.0.0.1 [2606:4700:4700::1111] [2606:4700:4700::1001]; # Cloudflare
+      add_header Strict-Transport-Security 'max-age=31536000; includeSubDomains; preload' always;
+      root /var/www/html;
+      index index.html index.htm index.nginx-debian.html;
+      server_name _;
+      location / {{
+        try_files $uri $uri/ =404;
+      }}
+    }}
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
-""".format(
-    TAILSCALE_AUTH_KEY,
-    TLD,
-    DO_API_TOKEN,
-    LETSENCRYPT_EMAIL,
-)
+"""
 
 droplet_drip = digitalocean.Droplet(
     "drip",
@@ -110,7 +142,7 @@ domain_record_drip_a = digitalocean.DnsRecord(
     value=droplet_drip.ipv4_address,
 )
 
-cloud_init_stackstorm = """#cloud-config
+cloud_init_stackstorm = f"""#cloud-config
 write_files:
 - path: /var/tmp/stackstorm-inventory.yml
   content: |
@@ -118,12 +150,12 @@ write_files:
       hosts:
         localhost:
           ansible_connection: local
-          st2_auth_username: "{4}"
-          st2_auth_password: "{5}"
+          st2_auth_username: "{ST2_AUTH_USERNAME}"
+          st2_auth_password: "{ST2_AUTH_PASSWORD}"
           st2web_ssl_certificate: |
-            {{{{ lookup('ansible.builtin.file', '{6}') }}}}
+            {{{{ lookup('ansible.builtin.file', '/etc/letsencrypt/live/stackstorm.{TLD}/fullchain.pem') }}}}
           st2web_ssl_certificate_key: |
-            {{{{ lookup('ansible.builtin.file', '{7}') }}}}
+            {{{{ lookup('ansible.builtin.file', '/etc/letsencrypt/live/stackstorm.{TLD}/privkey.pem') }}}}
 - path: /var/tmp/cloud-init.sh
   content: |
     #!/usr/bin/env bash
@@ -139,7 +171,7 @@ write_files:
       | sudo tee /etc/apt/sources.list.d/tailscale.list
     apt-get -y update
     apt-get -y install tailscale
-    sudo tailscale up --authkey "{0}"
+    sudo tailscale up --authkey "{TAILSCALE_AUTH_KEY}"
     tailscale ip -4
     echo
     echo ">>>> CERTBOT <<<<"
@@ -150,17 +182,17 @@ write_files:
     ln -s /snap/bin/certbot /usr/bin/certbot
     touch /root/digitalocean.ini
     chmod 600 /root/digitalocean.ini
-    echo "dns_digitalocean_token = {2}" >/root/digitalocean.ini
+    echo "dns_digitalocean_token = {DO_API_TOKEN}" >/root/digitalocean.ini
     snap set certbot trust-plugin-with-root=ok
     snap install certbot-dns-digitalocean
     certbot certonly \
       --agree-tos \
-      --email "{3}" \
+      --email "{LETSENCRYPT_EMAIL}" \
       --non-interactive \
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "stackstorm.{1}"
+      --domains "stackstorm.{TLD}"
     echo
     echo ">>>> STACKSTORM <<<<"
     echo
@@ -173,16 +205,7 @@ write_files:
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
-""".format(
-    TAILSCALE_AUTH_KEY,
-    TLD,
-    DO_API_TOKEN,
-    LETSENCRYPT_EMAIL,
-    ST2_AUTH_USERNAME,
-    ST2_AUTH_PASSWORD,
-    f"/etc/letsencrypt/live/stackstorm.{TLD}/fullchain.pem",
-    f"/etc/letsencrypt/live/stackstorm.{TLD}/privkey.pem",
-)
+"""
 
 droplet_stackstorm = digitalocean.Droplet(
     "stackstorm",
@@ -204,7 +227,7 @@ domain_record_stackstorm_a = digitalocean.DnsRecord(
     value=droplet_stackstorm.ipv4_address,
 )
 
-cloud_init_thelounge = """#cloud-config
+cloud_init_thelounge = f"""#cloud-config
 groups:
   - thelounge
 users:
@@ -228,7 +251,7 @@ write_files:
       | sudo tee /etc/apt/sources.list.d/tailscale.list
     apt-get -y update
     apt-get -y install tailscale
-    tailscale up --authkey "{0}"
+    tailscale up --authkey "{TAILSCALE_AUTH_KEY}"
     tailscale ip -4
     echo
     echo ">>>> CERTBOT <<<<"
@@ -239,17 +262,17 @@ write_files:
     ln -s /snap/bin/certbot /usr/bin/certbot
     touch /root/digitalocean.ini
     chmod 600 /root/digitalocean.ini
-    echo "dns_digitalocean_token = {2}" >/root/digitalocean.ini
+    echo "dns_digitalocean_token = {DO_API_TOKEN}" >/root/digitalocean.ini
     snap set certbot trust-plugin-with-root=ok
     snap install certbot-dns-digitalocean
     certbot certonly \
       --agree-tos \
-      --email "{3}" \
+      --email "{LETSENCRYPT_EMAIL}" \
       --non-interactive \
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "thelounge.{1}"
+      --domains "thelounge.{TLD}"
     echo
     echo ">>>> THELOUNGE <<<<"
     echo
@@ -265,15 +288,15 @@ write_files:
     server {{
       listen 80 default_server;
       listen [::]:80 default_server;
-      server_name thelounge.{1};
+      server_name thelounge.{TLD};
       rewrite ^ https://$host$request_uri? permanent;
     }}
     server {{
       listen 443 ssl default_server;
       listen [::]:443 ssl default_server;
-      server_name thelounge.{1};
-      ssl_certificate /etc/letsencrypt/live/thelounge.analogpuddle.cloud/fullchain.pem;
-      ssl_certificate_key /etc/letsencrypt/live/thelounge.analogpuddle.cloud/privkey.pem;
+      server_name thelounge.{TLD};
+      ssl_certificate /etc/letsencrypt/live/thelounge.{TLD}/fullchain.pem;
+      ssl_certificate_key /etc/letsencrypt/live/thelounge.{TLD}/privkey.pem;
       ssl_protocols TLSv1.3 TLSv1.2;
       ssl_prefer_server_ciphers on;
       ssl_ecdh_curve secp521r1:secp384r1;
@@ -375,12 +398,7 @@ write_files:
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
-""".format(
-    TAILSCALE_AUTH_KEY,
-    TLD,
-    DO_API_TOKEN,
-    LETSENCRYPT_EMAIL,
-)
+"""
 
 droplet_thelounge = digitalocean.Droplet(
     "thelounge",
