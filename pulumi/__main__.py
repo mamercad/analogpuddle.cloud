@@ -78,8 +78,7 @@ write_files:
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "{TLD}" \
-      --domains "*.{TLD}"
+      --domains "drip.{TLD}"
     echo
     echo ">>>> LASTMILE <<<<"
     echo
