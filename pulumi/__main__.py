@@ -392,3 +392,6 @@ domain_record_thelounge_a = digitalocean.DnsRecord(
     type="A",
     value=droplet_thelounge.ipv4_address,
 )
+
+with open("../README.md") as f:
+    pulumi.export("readme", f.read())
