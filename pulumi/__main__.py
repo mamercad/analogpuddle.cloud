@@ -79,7 +79,8 @@ write_files:
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
       --domains "{TLD}" \
-      --domains "*.{TLD}"
+      --domains "*.{TLD}" \
+      --domains "drip.{TLD}"
     echo
     echo ">>>> LASTMILE <<<<"
     echo
@@ -192,7 +193,8 @@ write_files:
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "stackstorm.{TLD}"
+      --domains "stackstorm.{TLD}" \
+      --domains "x.stackstorm.{TLD}"
     echo
     echo ">>>> STACKSTORM <<<<"
     echo
@@ -272,7 +274,8 @@ write_files:
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "thelounge.{TLD}"
+      --domains "thelounge.{TLD}" \
+      --domains "x.thelounge.{TLD}"
     echo
     echo ">>>> THELOUNGE <<<<"
     echo
