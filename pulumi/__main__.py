@@ -205,6 +205,13 @@ domain_record_stackstorm_a = digitalocean.DnsRecord(
 )
 
 cloud_init_thelounge = """#cloud-config
+groups:
+  - thelounge
+users:
+  - name: thelounge
+    gecos: The Lounge
+    primary_group: thelounge
+    lock_passwd: true
 write_files:
 - path: /var/tmp/cloud-init.sh
   content: |
@@ -295,11 +302,13 @@ write_files:
       }}
     }}
 - path: /etc/thelounge/config.js
+  owner: thelounge:thelounge
+  permissions: '0644'
   content: |
     "use strict";
     module.exports = {{
       public: false,
-      host: 127.0.0.1,
+      host: "127.0.0.1",
       port: 9000,
       bind: undefined,
       reverseProxy: true,
