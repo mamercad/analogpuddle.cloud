@@ -228,13 +228,6 @@ domain_record_stackstorm_a = digitalocean.DnsRecord(
 )
 
 cloud_init_thelounge = f"""#cloud-config
-groups:
-  - thelounge
-users:
-  - name: thelounge
-    gecos: The Lounge
-    primary_group: thelounge
-    lock_passwd: true
 write_files:
 - path: /var/tmp/cloud-init.sh
   content: |
@@ -399,6 +392,7 @@ write_files:
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
+    - systemctl restart thelounge
 """
 
 droplet_thelounge = digitalocean.Droplet(
