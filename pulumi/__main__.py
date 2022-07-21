@@ -13,7 +13,6 @@ from config import (
     DO_API_TOKEN,
     ST2_AUTH_USERNAME,
     ST2_AUTH_PASSWORD,
-    EPOCH_TIME,
 )
 
 vpc = digitalocean.get_vpc(name=f"default-{DEFAULT_REGION}")
@@ -161,8 +160,7 @@ write_files:
       --dns-digitalocean \
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
-      --domains "stackstorm.{1}" \
-      --domains "stackstorm-{8}.{1}"
+      --domains "stackstorm.{1}"
     echo
     echo ">>>> STACKSTORM <<<<"
     echo
@@ -184,7 +182,6 @@ runcmd:
     ST2_AUTH_PASSWORD,
     f"/etc/letsencrypt/live/stackstorm.{TLD}/fullchain.pem",
     f"/etc/letsencrypt/live/stackstorm.{TLD}/privkey.pem",
-    EPOCH_TIME,
 )
 
 droplet_stackstorm = digitalocean.Droplet(
