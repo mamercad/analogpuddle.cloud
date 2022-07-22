@@ -266,7 +266,7 @@ write_files:
       --dns-digitalocean-propagation-seconds 300 \
       --dns-digitalocean-credentials /root/digitalocean.ini \
       --domains "thelounge.{TLD}" \
-      --domains "x.thelounge.{TLD}"
+      --domains "y.thelounge.{TLD}"
     echo
     echo ">>>> THELOUNGE <<<<"
     echo
@@ -318,8 +318,7 @@ write_files:
         proxy_read_timeout 1d;
       }}
     }}
-- path: /etc/thelounge/config.js
-  owner: thelounge:thelounge
+- path: /var/tmp/thelounge.config.js
   permissions: '0644'
   content: |
     "use strict";
@@ -392,7 +391,10 @@ write_files:
 runcmd:
     - - bash
       - /var/tmp/cloud-init.sh
+    - cp /var/tmp/thelounge.config.js /etc/thelounge/config.js
+    - chown thelounge:thelounge /etc/thelounge/config.js
     - systemctl restart thelounge
+    - systemctl restart nginx
 """
 
 droplet_thelounge = digitalocean.Droplet(
