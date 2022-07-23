@@ -3,7 +3,8 @@
   hosts: all
   gather_facts: true
   become: false
+  roles:
+    - logtail
   tasks:
-
     - name: ping
       ansible.builtin.ping:
