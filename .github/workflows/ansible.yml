@@ -15,6 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
+      - name: debug
+        run: |
+          pwd
+          ls
+          ls ..
+
       - name: site
         uses: dawidd6/action-ansible-playbook@v2
         with:
