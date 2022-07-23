@@ -15,15 +15,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      - name: debug
-        run: |
-          pwd
-          ls
-          ls ..
+      - name: checkout
+        uses: actions/checkout@v3
 
       - name: site
         uses: dawidd6/action-ansible-playbook@v2
         with:
           playbook: site.yml
-          directory: ./ansible
+          directory: ansible
           key: ${{ secrets.SSH_PRIVATE_KEY }}
