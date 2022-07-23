@@ -1,7 +1,11 @@
 all:
   vars:
     ansible_user: github
+    tld: analogpuddle.cloud
   hosts:
     drip:
+      ansible_host: "{{ inventory_hostname }}.{{ tld }}"
     stackstorm:
+      ansible_host: "{{ inventory_hostname }}.{{ tld }}"
     thelounge:
+      ansible_host: "{{ inventory_hostname }}.{{ tld }}"
