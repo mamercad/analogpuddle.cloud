@@ -1,0 +1,23 @@
+name: ansible
+
+on:
+  push:
+    branches:
+      - devel
+    paths:
+      - .github/workflows/ansible.yml
+      - ansible/**
+  workflow_dispatch:
+
+jobs:
+
+  ansible:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: site
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: site.yml
+          directory: ansible
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
