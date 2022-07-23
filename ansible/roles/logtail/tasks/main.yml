@@ -1,0 +1,5 @@
+---
+# tasks file for logtail
+
+- name: ping
+  ansible.builtin.ping:
