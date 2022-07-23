@@ -24,3 +24,5 @@ jobs:
           playbook: site.yml
           directory: ansible
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          options: |
+            --inventory inventory.yml
